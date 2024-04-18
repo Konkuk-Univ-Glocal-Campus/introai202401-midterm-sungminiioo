@@ -199,6 +199,31 @@ def visualize_pooling_layer_on_fashion_mnist(pooling_layer, test_loader):
 
     plt.show()
 
+def visualize_convolution_layer_on_fashion_mnist(conv_layer, test_loader):
+    # FashionMNIST 데이터셋에서 이미지를 가져와서 컨볼루션 레이어를 통과시킨 후 시각화
+    images, _ = next(iter(test_loader))
+    input_image = images[0].squeeze().numpy()  # 첫 번째 이미지 선택하여 넘파이 배열로 변환
+
+    # 입력 이미지와 컨볼루션 레이어의 출력을 시각화
+    plt.figure(figsize=(10, 5))
+    plt.subplot(1, 2, 1)
+    plt.title('Input Image')
+    plt.imshow(input_image, cmap='gray')
+    plt.axis('off')
+
+    # 컨볼루션 레이어를 통과한 후의 출력 계산
+    with torch.no_grad():
+        input_tensor = torch.tensor(images).float()
+        output = F.relu(conv_layer(input_tensor)).numpy()
+
+    output_image = output[0][0]  # 배치 차원과 채널 차원 제거
+    plt.subplot(1, 2, 2)
+    plt.title('Output of Convolution Layer')
+    plt.imshow(output_image, cmap='gray')
+    plt.axis('off')
+
+    plt.show()
+
 def load_cats_dogs_dataset():
     if not os.path.exists('data/PetImages'):
         with zipfile.ZipFile('data/kagglecatsanddogs_5340.zip', 'r') as zip_ref:
