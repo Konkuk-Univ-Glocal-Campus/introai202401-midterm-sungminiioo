@@ -7,6 +7,7 @@ import torch.nn as nn
 from torch.utils import data
 import torchvision
 from torchvision.transforms import ToTensor
+from torch.utils.data import DataLoader
 import matplotlib.pyplot as plt
 import numpy as np
 from PIL import Image
@@ -16,14 +17,13 @@ import zipfile
 
 default_device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
-def load_fashion_mnist(batch_size=64):
+def load_Fashionmnist(batch_size=64):
     builtins.data_train = torchvision.datasets.FashionMNIST('./data',
-        download=True, train=True, transform=ToTensor())
-    builtins.data_test = torchvision.datasets.FashionMNIST('./data', 
-        download=True, train=False, transform=ToTensor())
-    builtins.train_loader = torch.utils.data.DataLoader(data_train, batch_size=batch_size)
-    builtins.test_loader = torch.utils.data.DataLoader(data_test, batch_size=batch_size)
-
+        download=True,train=True,transform=ToTensor())
+    builtins.data_test = torchvision.datasets.FashionMNIST('./data',
+        download=True,train=False,transform=ToTensor())
+    builtins.train_loader = torch.utils.data.DataLoader(data_train,batch_size=batch_size)
+    builtins.test_loader = torch.utils.data.DataLoader(data_test,batch_size=batch_size)
     
 def train_epoch(net,dataloader,lr=0.01,optimizer=None,loss_fn = nn.NLLLoss()):
     optimizer = optimizer or torch.optim.Adam(net.parameters(),lr=lr)
@@ -155,6 +155,24 @@ def common_transform():
             std_normalize])
     return trans
 
+def common_transform():
+    std_normalize = torchvision.transforms.Normalize(mean=[0.485, 0.456, 0.406],
+                          std=[0.229, 0.224, 0.225])
+    trans = torchvision.transforms.Compose([
+            torchvision.transforms.Resize(256),
+            torchvision.transforms.CenterCrop(224),
+            torchvision.transforms.ToTensor(), 
+            std_normalize])
+    return trans
+
+def load_Fashionmnist(batch_size=64):
+    builtins.data_train = torchvision.datasets.FashionMNIST('./data',
+        download=True,train=True,transform=ToTensor())
+    builtins.data_test = torchvision.datasets.FashionMNIST('./data',
+        download=True,train=False,transform=ToTensor())
+    builtins.train_loader = torch.utils.data.DataLoader(data_train,batch_size=batch_size)
+    builtins.test_loader = torch.utils.data.DataLoader(data_test,batch_size=batch_size)
+
 def load_cats_dogs_dataset():
     if not os.path.exists('data/PetImages'):
         with zipfile.ZipFile('data/kagglecatsanddogs_5340.zip', 'r') as zip_ref:
@@ -168,3 +186,17 @@ def load_cats_dogs_dataset():
     trainloader = torch.utils.data.DataLoader(trainset,batch_size=32)
     testloader = torch.utils.data.DataLoader(trainset,batch_size=32)
     return dataset, trainloader, testloader
+
+def check_image(fn):
+    try:
+        im = Image.open(fn)
+        im.verify()
+        return True
+    except:
+        return False
+    
+def check_image_dir(path):
+    for fn in glob.glob(path):
+        if not check_image(fn):
+            print("Corrupt image: {}".format(fn))
+            os.remove(fn)
